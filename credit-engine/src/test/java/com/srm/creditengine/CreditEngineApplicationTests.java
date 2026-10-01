@@ -1,4 +1,4 @@
-package com.srm.credit_engine;
+package com.srm.creditengine;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
