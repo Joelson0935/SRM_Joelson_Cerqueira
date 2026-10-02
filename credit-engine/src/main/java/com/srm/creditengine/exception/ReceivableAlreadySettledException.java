@@ -6,7 +6,9 @@ package com.srm.creditengine.exception;
  */
 public class ReceivableAlreadySettledException extends RuntimeException {
 
-    public ReceivableAlreadySettledException(Long receivableId) {
+    private static final long serialVersionUID = 1L;
+
+	public ReceivableAlreadySettledException(Long receivableId) {
         super("Receivable " + receivableId + " has already been settled.");
     }
 }

@@ -6,7 +6,9 @@ package com.srm.creditengine.exception;
  */
 public class ReceivableNotFoundException extends RuntimeException {
 
-    public ReceivableNotFoundException(Long id) {
+    private static final long serialVersionUID = 1L;
+
+	public ReceivableNotFoundException(Long id) {
         super("Receivable not found: " + id);
     }
 }

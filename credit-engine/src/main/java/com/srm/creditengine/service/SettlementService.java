@@ -16,8 +16,10 @@ import com.srm.creditengine.domain.entity.Receivable;
 import com.srm.creditengine.domain.entity.Settlement;
 import com.srm.creditengine.domain.enums.PaymentCurrency;
 import com.srm.creditengine.dto.request.SettlementRequest;
+import com.srm.creditengine.exception.ExchangeRateNotFoundException;
 import com.srm.creditengine.exception.ReceivableAlreadySettledException;
 import com.srm.creditengine.exception.ReceivableNotFoundException;
+import com.srm.creditengine.exception.SettlementNotFoundException;
 import com.srm.creditengine.pricing.PricingResult;
 import com.srm.creditengine.repository.ReceivableRepository;
 import com.srm.creditengine.repository.SettlementRepository;
@@ -168,7 +170,7 @@ public class SettlementService {
     @Transactional(readOnly = true)
     public Settlement findById(Long id) {
         return settlementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Settlement not found: " + id));
+                .orElseThrow(() -> new SettlementNotFoundException(id));
     }
 
     /**

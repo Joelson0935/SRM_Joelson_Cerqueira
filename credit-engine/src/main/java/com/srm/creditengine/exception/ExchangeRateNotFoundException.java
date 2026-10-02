@@ -6,7 +6,9 @@ package com.srm.creditengine.exception;
  */
 public class ExchangeRateNotFoundException extends RuntimeException {
 
-    public ExchangeRateNotFoundException(String currencyPair) {
+    private static final long serialVersionUID = 1L;
+
+	public ExchangeRateNotFoundException(String currencyPair) {
         super("No exchange rate found for currency pair: " + currencyPair);
     }
 }
