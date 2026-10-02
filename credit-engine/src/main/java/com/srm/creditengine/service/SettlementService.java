@@ -1,5 +1,16 @@
 package com.srm.creditengine.service;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.srm.creditengine.domain.entity.ExchangeRate;
 import com.srm.creditengine.domain.entity.Receivable;
 import com.srm.creditengine.domain.entity.Settlement;
@@ -10,14 +21,6 @@ import com.srm.creditengine.exception.ReceivableNotFoundException;
 import com.srm.creditengine.pricing.PricingResult;
 import com.srm.creditengine.repository.ReceivableRepository;
 import com.srm.creditengine.repository.SettlementRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 /**
  * Orquestra o fluxo completo de liquidação de um recebível.
@@ -138,6 +141,34 @@ public class SettlementService {
         receivableRepository.save(receivable);
 
         return new SettlementResult(saved, true);
+    }
+
+    /**
+     * Extrato analítico de liquidações com filtros opcionais e paginação server-side.
+     * Nunca carrega toda a tabela em memória — a query paginada vai direto ao banco.
+     *
+     * @param from     início do período (inclusivo), null = sem limite inferior
+     * @param to       fim do período (inclusivo), null = sem limite superior
+     * @param cedente  nome do cedente, null = todos
+     * @param currency moeda de pagamento, null = todas
+     * @param pageable configuração de paginação e ordenação
+     */
+    @Transactional(readOnly = true)
+    public Page<Settlement> findByFilters(LocalDateTime from,
+                                          LocalDateTime to,
+                                          String cedente,
+                                          PaymentCurrency currency,
+                                          Pageable pageable) {
+        return settlementRepository.findByFilters(from, to, cedente, currency, pageable);
+    }
+
+    /**
+     * Busca uma liquidação pelo ID.
+     */
+    @Transactional(readOnly = true)
+    public Settlement findById(Long id) {
+        return settlementRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Settlement not found: " + id));
     }
 
     /**

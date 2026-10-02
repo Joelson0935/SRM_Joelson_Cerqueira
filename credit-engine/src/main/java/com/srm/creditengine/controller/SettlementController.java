@@ -1,5 +1,6 @@
 package com.srm.creditengine.controller;
 
+import com.srm.creditengine.domain.enums.PaymentCurrency;
 import com.srm.creditengine.dto.request.SettlementRequest;
 import com.srm.creditengine.dto.response.SettlementResponse;
 import com.srm.creditengine.service.SettlementService;
@@ -8,22 +9,26 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 /**
- * Endpoint de liquidação de recebíveis.
+ * Endpoints de liquidação e extrato.
  *
- * POST /api/settlements
- *
- * Header obrigatório: Idempotency-Key (UUID gerado pelo cliente)
- * Retorna 201 Created para nova liquidação.
- * Retorna 200 OK para retentativa com a mesma Idempotency-Key (idempotente).
+ * POST /api/settlements                  → liquida recebível (idempotente via header)
+ * GET  /api/settlements                  → extrato com filtros e paginação server-side
+ * GET  /api/settlements/{id}             → detalhe de uma liquidação
  */
 @RestController
 @RequestMapping("/api/settlements")
-@Tag(name = "Settlements", description = "Liquidação de recebíveis")
+@Tag(name = "Settlements", description = "Liquidação e extrato de recebíveis")
 public class SettlementController {
 
     private final SettlementService settlementService;
@@ -54,9 +59,45 @@ public class SettlementController {
                 settlementService.settle(request, idempotencyKey);
 
         SettlementResponse response = SettlementResponse.from(result.settlement());
-
-        // 201 Created para nova liquidação, 200 OK para retentativa idempotente
         HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
         return ResponseEntity.status(status).body(response);
+    }
+
+    @GetMapping
+    @Operation(
+            summary = "Extrato de liquidações",
+            description = """
+                    Retorna o histórico de liquidações com filtros opcionais.
+                    Paginação server-side — nunca carrega toda a tabela em memória.
+
+                    Query params: `from`, `to` (ISO-8601), `cedente`, `currency` (BRL|USD), `page`, `size`, `sort`.
+                    """
+    )
+    public Page<SettlementResponse> findAll(
+            @Parameter(description = "Início do período (ex: 2026-01-01T00:00:00)")
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+
+            @Parameter(description = "Fim do período (ex: 2026-12-31T23:59:59)")
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+
+            @Parameter(description = "Nome do cedente")
+            @RequestParam(required = false) String cedente,
+
+            @Parameter(description = "Moeda de pagamento: BRL ou USD")
+            @RequestParam(required = false) PaymentCurrency currency,
+
+            @PageableDefault(size = 20, sort = "settledAt") Pageable pageable) {
+
+        return settlementService
+                .findByFilters(from, to, cedente, currency, pageable)
+                .map(SettlementResponse::from);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Detalhe de uma liquidação")
+    public SettlementResponse findById(@PathVariable Long id) {
+        return SettlementResponse.from(settlementService.findById(id));
     }
 }
