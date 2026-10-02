@@ -1,0 +1,70 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 0.9rem;
+  align-items: end;
+  padding: 1.1rem 1.2rem;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+/* Field tem margin-bottom padrão; aqui o grid cuida do espaçamento. */
+.filters > :global(div) {
+  margin-bottom: 0;
+}
+
+.filterActions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+@media (max-width: 820px) {
+  .filters {
+    grid-template-columns: 1fr 1fr;
+  }
+  .filterActions {
+    grid-column: 1 / -1;
+  }
+}
+
+.errorBox {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.pageInfo {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.pageButtons {
+  display: flex;
+  gap: 0.6rem;
+}
