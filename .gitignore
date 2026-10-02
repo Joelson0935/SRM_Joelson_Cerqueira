@@ -1,0 +1,23 @@
+# Variáveis de ambiente — nunca commitar senhas
+.env
+
+# Compilados Java
+target/
+*.class
+*.jar
+*.war
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
