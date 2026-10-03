@@ -4,11 +4,11 @@ import type { ExchangeRateRequest, ExchangeRateResponse } from '../../types'
 /**
  * Endpoints de taxas de câmbio.
  *
- * POST /api/exchange-rates           → cadastra nova taxa
- * GET  /api/exchange-rates/latest/{pair} → taxa vigente para o par
+ * POST /api/exchange-rates          → cadastra nova taxa
+ * GET  /api/exchange-rates/latest?pair=USD/BRL → taxa vigente para o par
  *
- * O par vem no formato "USD/BRL". Como a URL contém '/', ele é codificado para
- * não quebrar o path (USD%2FBRL).
+ * O par ("USD/BRL") vai como query param — não no path — porque a barra
+ * codificada (%2F) no path é bloqueada pelo Tomcat (400 Bad Request).
  */
 export const exchangeRateApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -25,8 +25,10 @@ export const exchangeRateApi = api.injectEndpoints({
     }),
 
     getLatestRate: builder.query<ExchangeRateResponse, string>({
-      query: (currencyPair) =>
-        `/exchange-rates/latest/${encodeURIComponent(currencyPair)}`,
+      query: (pair) => ({
+        url: '/exchange-rates/latest',
+        params: { pair },
+      }),
       providesTags: ['ExchangeRate'],
     }),
   }),
