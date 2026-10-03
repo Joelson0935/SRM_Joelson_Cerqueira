@@ -16,13 +16,13 @@ import com.srm.creditengine.domain.entity.Receivable;
 import com.srm.creditengine.domain.entity.Settlement;
 import com.srm.creditengine.domain.enums.PaymentCurrency;
 import com.srm.creditengine.dto.request.SettlementRequest;
-import com.srm.creditengine.exception.ExchangeRateNotFoundException;
 import com.srm.creditengine.exception.ReceivableAlreadySettledException;
 import com.srm.creditengine.exception.ReceivableNotFoundException;
 import com.srm.creditengine.exception.SettlementNotFoundException;
 import com.srm.creditengine.pricing.PricingResult;
 import com.srm.creditengine.repository.ReceivableRepository;
 import com.srm.creditengine.repository.SettlementRepository;
+import com.srm.creditengine.repository.SettlementSpecifications;
 
 /**
  * Orquestra o fluxo completo de liquidação de um recebível.
@@ -161,7 +161,9 @@ public class SettlementService {
                                           String cedente,
                                           PaymentCurrency currency,
                                           Pageable pageable) {
-        return settlementRepository.findByFilters(from, to, cedente, currency, pageable);
+        return settlementRepository.findAll(
+                SettlementSpecifications.withFilters(from, to, cedente, currency),
+                pageable);
     }
 
     /**
