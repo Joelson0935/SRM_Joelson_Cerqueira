@@ -1,11 +1,15 @@
 package com.srm.creditengine.repository;
 
-import com.srm.creditengine.domain.entity.Settlement;
-import com.srm.creditengine.domain.enums.PaymentCurrency;
-import jakarta.persistence.criteria.JoinType;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.data.jpa.domain.Specification;
 
-import java.time.LocalDateTime;
+import com.srm.creditengine.domain.entity.Settlement;
+import com.srm.creditengine.domain.enums.PaymentCurrency;
+
+import jakarta.persistence.criteria.JoinType;
 
 /**
  * Specifications para o extrato de liquidações.
@@ -48,17 +52,26 @@ public final class SettlementSpecifications {
     }
 
     /**
-     * Combina todos os filtros. Specification.allOf ignora specs nulas, então
-     * apenas os filtros efetivamente informados compõem a query.
+     * Combina apenas os filtros informados. Specifications nulas (filtro ausente)
+     * são descartadas antes de combinar — Specification.allOf não aceita null na
+     * lista. Sem nenhum filtro, retorna uma Specification vazia (sem WHERE).
      */
     public static Specification<Settlement> withFilters(LocalDateTime from,
                                                         LocalDateTime to,
                                                         String cedente,
                                                         PaymentCurrency currency) {
-        return Specification.allOf(
-                settledFrom(from),
-                settledTo(to),
-                hasCedente(cedente),
-                hasCurrency(currency));
+        List<Specification<Settlement>> specs = new ArrayList<>();
+        addIfPresent(specs, settledFrom(from));
+        addIfPresent(specs, settledTo(to));
+        addIfPresent(specs, hasCedente(cedente));
+        addIfPresent(specs, hasCurrency(currency));
+        return Specification.allOf(specs);
+    }
+
+    private static void addIfPresent(List<Specification<Settlement>> specs,
+                                     Specification<Settlement> spec) {
+        if (spec != null) {
+            specs.add(spec);
+        }
     }
 }
